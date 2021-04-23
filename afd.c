@@ -32,10 +32,10 @@ void crearDelta(char *nomArch,int num_lineas){
     for(int y = 0;y<k;y++) {
      c = fgetc(fichero);
      if(c=='\n'){
-	c=fgetc(fichero);
+	c=fgetc(fichero);  //Como solo se recorren los estados se omiten los saltos de linea.
      }
      delta[x][y]=c-48;
-     printf("delta[%d][%d]=%d\n",x,y,delta[x][y]);
+     //printf("delta[%d][%d]=%d\n",x,y,delta[x][y]); Quitar comentarios para desplegar la delta
     }
   }
   //Obtenemos los estados finales
@@ -50,14 +50,8 @@ void crearDelta(char *nomArch,int num_lineas){
       t++;
     }
   }
-  estadoFin[t]=-1;
-  printf("%d\n",estadoFin[2]);
+  estadoFin[t]=-1; // Define el fin del espacio utilizado en el arreglo.
   fclose(fichero); //Cerramos el archivo utilizado
-  for(int h=0; h<j;h++){
-     for(int z=0; z < k;z++){
-        printf("delta[%d][%d]:%d\n",h,z,delta[h][z]);
-     }
-  }
 }
 
 int afd(char *cad){
@@ -82,13 +76,13 @@ int estado=0,posCad=0;
   printf("Termine en el estado: %d\n",estado);
   int i = 0;
   while(1){
-     if(estado==estadoFin[i])
+     if(estado==estadoFin[i])           //Realizamos una comparación con cada estado final.
      {  
 		        
         acpt=1;
         break;
      }
-     if(estadoFin[i]==-1)                                            //Recorrimos toda la cadena y el estado en el que terminamos NO pertenece a Qf
+     if(estadoFin[i]==-1)           	//Recorrimos toda la cadena y el estado en el que terminamos NO pertenece a Qf                                        
      {
         acpt=0;
         break;
