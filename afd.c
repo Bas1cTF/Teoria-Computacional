@@ -4,78 +4,98 @@
 #include <string.h>
 FILE *fichero;
 int j,k;
-//int delta[100][100-k];         //Aquí almacenamos la representación tabular de nuestro AFD,
-//int j,k;                            //es decir, su función de transición delta.
+int delta[100][100];         //Aquí almacenamos la representación tabular de nuestro AFD,
+                             //es decir, su función de transición delta.
+int estadoFin[100];          //Aquí almacenamos los estados finales.                   
+char alfabeto[100];          //Aquí almacenamos el alfabeto aceptado por el afd
 
-/*int afd(char *cad){ //Analiza la cadena
- 
-}
-struct delta{:
-  int estado [100];
-  char simbolo [100];
-};*/
-int afd(char *nomArch,char *cad,int num_lineas){
-  int delta[j][k];
-  int y=0;
+void crearDelta(char *nomArch,int num_lineas){
+  int c,t=0;
   j=num_lineas-2;
-  char alfabeto [100];
-  char aux;
-  char aux2 [100];
-  char estadoFin[100];
+  //Abrimos el archivo a utilizar
   fichero=fopen(nomArch,"rt");
-  //fgets(alfabeto,100,fichero);
+  //Guardamos el alfabeto recibido
   while (1) {
     c = fgetc(fichero);
-    aux = c;
-    if (aux == '\n'){
+    alfabeto[t] = c;
+    if (alfabeto[t] == '\n'){
       c=0;
       break;
     }
+    t++;
   }
-  k = strlen(aux)-1;
-  for(int i=0;i<j;i++){
-    fgets(aux,100,fichero);
-    for(int x = 0;x<k;x++){
-      delta[i][alfabeto[x]]=aux[x];
-      //printf("delta[%d][%d]:%c\n",i,alfabeto[x],delta[i][alfabeto[x]]);
+  k = strlen(alfabeto)-1;
+  printf("%d  %d\n",c,j);
+  printf("%s",alfabeto);  
+  //Creamos la delta con los estados proporcionados
+  for(int x = 0; x<j;x++){
+    for(int y = 0;y<k;y++) {
+     c = fgetc(fichero);
+     if(c=='\n'){
+	c=fgetc(fichero);
+     }
+     delta[x][y]=c-48;
+     printf("delta[%d][%d]=%d\n",x,y,delta[x][y]);
     }
   }
-  fgets(aux2,100,fichero);
-  for(int l=0;l<strlen(aux2)-1;l++){
-    if(aux2[l]!=123 && aux2[l]!=44 && aux2[l]!=125){
-      estadoFin[y]=aux[l];
-      y++;
+  //Obtenemos los estados finales
+  t=0; 
+  while (1) {
+    c = fgetc(fichero);
+    if(feof(fichero)){
+      break;
+    }
+    if(c!=123 && c!=44 && c!=125 && c!=10){
+      estadoFin[t]=c-48;
+      t++;
     }
   }
-  /*printf("\n%c\n",estadoFin[1]);
-  //fclose(fichero);
+  estadoFin[t]=-1;
+  printf("%d\n",estadoFin[2]);
+  fclose(fichero); //Cerramos el archivo utilizado
   for(int h=0; h<j;h++){
      for(int z=0; z < k;z++){
-        printf("delta[%d][%d]:%c\n",h,alfabeto[z],delta[h][alfabeto[z]]);
+        printf("delta[%d][%d]:%d\n",h,z,delta[h][z]);
      }
-  }*/
-  fclose(fichero);
-  int estado=0,posCad=0;
-  int simbolo;
+  }
+}
+
+int afd(char *cad){
+int estado=0,posCad=0;
+  int simbolo,acpt;
   for(posCad=0;posCad<strlen(cad);posCad++){ //Realizamos un ciclo que recorrerá cada posición (símbolo)
-	 					     //de la cadena de entrada., 
-	       simbolo=cad[posCad];               //Ojo aquí: La dualidad de los símbolos del código ASCII:
-		                                     //Es un símbolo(caracter) y también es un número entero entre
-						     //cero y 127
-	       estado=delta[estado][simbolo];        //Aquí es donde sucede la transición: 
+      int i = 0;			     //de la cadena de entrada., 
+      while(1){
+	  if(alfabeto[i]==cad[posCad]){
+	    simbolo=i;
+	    break;
+	  }
+	  i++;		  
+      }                                    
+						     
+      estado=delta[estado][simbolo];        //Aquí es donde sucede la transición: 
 						     //A partir de un estado y un símbolo, la función delta (codificada 
 						     //en la tabla) nos indica a qué estado debemos transitar. 
-	       printf("%c,%c,%d\n",estado,simbolo,posCad); //Para fines de depuración desplegamos en pantalla
+      printf("%d,%c,%d\n",estado,alfabeto[i],posCad); //Para fines de depuración desplegamos en pantalla
 		                                           //una instantanea de cada iteracion.
   }
-  printf("Termine en el estado: %c\n",estado);
-  if((estado-48)==2){   //Verificamos si terminamos en un estado final del AFD. En nuestro caso, el único 
-		         // estado final, es el estado q2. Si es así, nuestra cadena es aceptada por este AFD,
-     return 1;
+  printf("Termine en el estado: %d\n",estado);
+  int i = 0;
+  while(1){
+     if(estado==estadoFin[i])
+     {  
+		        
+        acpt=1;
+        break;
+     }
+     if(estadoFin[i]==-1)                                            //Recorrimos toda la cadena y el estado en el que terminamos NO pertenece a Qf
+     {
+        acpt=0;
+        break;
+     }
+     i++;
   }
-  else             //Recorrimos toda la cadena y el estado en el que terminamos NO pertenece a Qf
-     return 0;
-
+  return acpt;
 }
 
 int contar_lineas(char *nomArch) {
@@ -100,27 +120,17 @@ int contar_lineas(char *nomArch) {
 
 int main(int argc, char** argv) { //Utilizamos el paso de argumentos de la linea de comando.
 	                          //El primero es el comando usado. O sea, el nombre de nuestro programa ejecutable.
-    /* delta[0][0]=0; //Estado q0, transicion con el símbolo '0'
-     delta[0][1]=1; //Estado q0, transicion con el simbolo '1'
-     delta[1][0]=2; //Estado q1 ...
-     delta[1][1]=1; //...
-     delta[2][0]=0;
-     delta[2][1]=1; *///¿Que lenguaje acepta nuestro AFD?
-    //delta[3][2]={{0,1},{2,1},{0,1}}; //Alternativamente, Podemos inicializar la delta en forma compacta.
-    int c,acpt;
+    int num_lineas;
     char cad [100]; //en cad almacenaremos la cadena que se probará si es aceptada por el AFD.
-
     if(argc != 3){     //Validamos que el programa reciba la cantidad correcta de argumentos
          printf ("Uso: %s <Archivo> Cadena_a_analizar\n",argv[0]);
 	 return 0;	
     }
     strcpy(cad,argv[2]); //En el siguiente argumento, argv[2], recibimos la cadena a analizar.
-
-    c = contar_lineas(argv[1]); 
-    acpt = afd(argv[1],cad,c);
+    num_lineas = contar_lineas(argv[1]); 
+    crearDelta(argv[1],num_lineas);
     
-   	 
-    if (acpt==1){   //Si afd devuelve 1, es aceptada...
+    if (afd(cad)==1){   //Si afd devuelve 1, es aceptada...
          printf("La cadena %s ",cad);
 	 printf("SI es aceptada\n");	
     }
