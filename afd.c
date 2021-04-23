@@ -19,12 +19,20 @@ int afd(char *nomArch,char *cad,int num_lineas){
   int y=0;
   j=num_lineas-2;
   char alfabeto [100];
-  char aux [100];
+  char aux;
   char aux2 [100];
   char estadoFin[100];
   fichero=fopen(nomArch,"rt");
-  fgets(alfabeto,100,fichero);
-  k = strlen(alfabeto)-1;
+  //fgets(alfabeto,100,fichero);
+  while (1) {
+    c = fgetc(fichero);
+    aux = c;
+    if (aux == '\n'){
+      c=0;
+      break;
+    }
+  }
+  k = strlen(aux)-1;
   for(int i=0;i<j;i++){
     fgets(aux,100,fichero);
     for(int x = 0;x<k;x++){
